@@ -86,7 +86,7 @@ const getpaginatedData = () => {
 
         <div className="flex justify-between mb-6">
           <div className="w-full sm:w-1/2 flex items-center">
-            {/* Search Input */}
+      
             <Input
               type="text"
               placeholder="Search by name, email, etc..."
@@ -128,7 +128,7 @@ const getpaginatedData = () => {
                       <option value="contains">Contains</option>
                       <option value="equals">Equals</option>
                       <option value="startsWith">Starts With</option>
-                      {/* Add more operators as needed */}
+               
                     </select>
                   </div>
                   <div>
