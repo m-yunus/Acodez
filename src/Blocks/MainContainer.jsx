@@ -9,37 +9,39 @@ import { useSelector, useDispatch } from "react-redux";
 import { deleteuser } from "@/store/actions";
 import { ChevronLeft, ChevronRight, Filter } from "lucide-react";
 
+const DEFAULT_FILTER_CRITERIA = { column: "id", operator: "contains", value: "" };
+const ITEMS_PER_PAGE = 5;
+
 const MainContainer = () => {
   const [filterOpen, setFilterOpen] = useState(false);
-  const [filterCriteria, setFilterCriteria] = useState({
-    column: "id",
-    operator: "contains",
-    value: "",
-  });
+  const [filterCriteria, setFilterCriteria] = useState(DEFAULT_FILTER_CRITERIA);
   const [searchTerm, setSearchTerm] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
-  const [itemsPerPage] = useState(5);
   const navigate = useNavigate();
   const dispatch = useDispatch();
   const { players } = useSelector((state) => state.users);
-console.log(players);
 
-  const totalPages = Math.ceil(players.length / itemsPerPage);
+  // Pagination calculation
+  const totalPages = Math.ceil(players.length / ITEMS_PER_PAGE);
 
+  // Handle delete player action
   const handleDelete = (playerId) => {
     dispatch(deleteuser(playerId));
   };
 
+  // Navigate to edit page with playerId
   const handleEdit = (playerId) => {
     navigate("/new", { state: { playerId } });
   };
 
+  // Handle pagination change
   const handlePageChange = (pageNumber) => {
     if (pageNumber >= 1 && pageNumber <= totalPages) {
       setCurrentPage(pageNumber);
     }
   };
 
+  // Calculate age from date of birth
   const calculateAge = (dateOfBirth) => {
     const dob = new Date(dateOfBirth);
     const today = new Date();
@@ -51,9 +53,9 @@ console.log(players);
     return age;
   };
 
+  // Filter players based on search term and filter criteria
   const applyFilters = () => {
     return players.filter((player) => {
-      // Apply search term filter
       if (searchTerm) {
         const lowercasedSearchTerm = searchTerm.toLowerCase();
         const matchesSearchTerm = Object.values(player)
@@ -61,7 +63,6 @@ console.log(players);
         if (!matchesSearchTerm) return false;
       }
 
-      // Apply specific filter criteria
       if (filterCriteria.operator === "contains") {
         return player[filterCriteria.column]
           ?.toString()
@@ -73,7 +74,9 @@ console.log(players);
   };
 
   const filteredPlayers = applyFilters();
-
+const getpaginatedData = () => {
+  return filteredPlayers.slice((currentPage - 1) * ITEMS_PER_PAGE, currentPage * ITEMS_PER_PAGE);
+}
   return (
     <div className="w-full h-full">
       <main className="w-full p-6 bg-white">
@@ -97,12 +100,11 @@ console.log(players);
                   className="bg-gray-100 hover:bg-gray-200 ml-4"
                   onClick={() => setFilterOpen((prev) => !prev)}
                 >
-                  <Filter size={20} fill="gray"  />
+                  <Filter size={20} fill="gray" />
                 </Button>
               </PopoverTrigger>
-              <PopoverContent className="p-4 w-auto" >
-              
-                <div className="flex  gap-2">
+              <PopoverContent className="p-4 w-auto">
+                <div className="flex gap-2">
                   <div>
                     <label className="block text-sm font-medium">Column</label>
                     <select
@@ -139,16 +141,16 @@ console.log(players);
                     />
                   </div>
                 </div>
-               
               </PopoverContent>
             </Popover>
           </div>
-          <Button
-            className="bg-gray-100 border-[#2F80ED] border-1-solid hover:bg-gray-200 ml-4"
+          <button
+            className="bg-none border-2 px-3 py-1 text-[#2F80ED]
+ border-[#2F80ED] border-1-solid hover:bg-gray-200 ml-4"
             onClick={() => navigate("/new")}
           >
             New
-          </Button>
+          </button>
         </div>
 
         {/* Table */}
@@ -168,10 +170,7 @@ console.log(players);
             </tr>
           </thead>
           <tbody>
-            {filteredPlayers.slice(
-              (currentPage - 1) * itemsPerPage,
-              currentPage * itemsPerPage
-            ).map((user, index) => (
+            {getpaginatedData().map((user, index) => (
               <tr key={index} className="border-t">
                 <td className="p-2">
                   <Checkbox />
@@ -180,9 +179,15 @@ console.log(players);
                 <td className="p-2">{calculateAge(user.dateOfBirth)}</td>
                 <td className="p-2">
                   {user?.leagues?.map((league, i) => (
-                    <span key={i} className="mr-2 bg-gray-200 text-xs p-1 rounded">
-                      {league}
-                    </span>
+                 <span
+                 key={i}
+                 className="mr-2 bg-none text-xs rounded-full"
+                 style={{ border: '1px solid #cdb1b1', padding: '5px 15px' }}
+               >
+                 {league}
+               </span>
+               
+                  
                   ))}
                 </td>
                 <td className="p-2">
@@ -217,10 +222,10 @@ console.log(players);
           </tbody>
         </Table>
 
-        {/* Pagination */}
+    
         <div className="flex justify-center items-center gap-4 mt-4">
           <span>
-            {currentPage} - {itemsPerPage} of {filteredPlayers.length}
+            {currentPage} - {ITEMS_PER_PAGE} of {filteredPlayers.length}
           </span>
           <Button
             disabled={currentPage === 1}
